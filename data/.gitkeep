@@ -1,0 +1,4 @@
+# This folder will contain the symptoms_dataset.csv file
+# Place your dataset here: symptoms_dataset.csv
+# Format: symptoms,disease
+# Example: "fever body ache headache","flu"

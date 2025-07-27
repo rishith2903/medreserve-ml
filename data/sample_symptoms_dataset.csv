@@ -1,0 +1,113 @@
+symptoms,disease
+"high fever body ache headache chills fatigue",flu
+"cough cold runny nose sore throat sneezing",common_cold
+"stomach ache nausea vomiting diarrhea abdominal pain",gastroenteritis
+"chest pain difficulty breathing shortness of breath",pneumonia
+"skin rash itching red spots swelling",allergic_reaction
+"severe headache sensitivity to light nausea vomiting",migraine
+"joint pain muscle ache stiffness swelling",arthritis
+"persistent cough blood in sputum weight loss night sweats",tuberculosis
+"frequent urination burning sensation cloudy urine",urinary_tract_infection
+"sore throat difficulty swallowing fever swollen glands",strep_throat
+"high fever severe headache muscle pain rash",dengue_fever
+"fever chills sweating fatigue muscle aches",malaria
+"chest pain rapid heartbeat shortness of breath dizziness",heart_attack
+"sudden severe headache confusion weakness paralysis",stroke
+"high blood sugar frequent urination excessive thirst",diabetes
+"low blood sugar dizziness sweating confusion",hypoglycemia
+"persistent fatigue weakness pale skin shortness of breath",anemia
+"high blood pressure headache dizziness blurred vision",hypertension
+"wheezing difficulty breathing chest tightness coughing",asthma
+"yellowing of skin and eyes dark urine fatigue",hepatitis
+"severe abdominal pain nausea vomiting fever",appendicitis
+"bone pain fatigue frequent infections easy bruising",leukemia
+"persistent cough chest pain weight loss fatigue",lung_cancer
+"abdominal pain bloating nausea weight loss",ovarian_cancer
+"breast lump breast pain nipple discharge",breast_cancer
+"skin changes moles irregular borders color changes",skin_cancer
+"memory loss confusion difficulty concentrating personality changes",alzheimer_disease
+"tremors muscle stiffness slow movement balance problems",parkinson_disease
+"muscle weakness fatigue difficulty swallowing speech problems",multiple_sclerosis
+"seizures loss of consciousness muscle spasms",epilepsy
+"mood swings depression mania energy changes",bipolar_disorder
+"persistent sadness loss of interest fatigue sleep problems",depression
+"excessive worry restlessness fatigue difficulty concentrating",anxiety_disorder
+"intrusive thoughts repetitive behaviors compulsions",obsessive_compulsive_disorder
+"flashbacks nightmares avoidance hypervigilance",post_traumatic_stress_disorder
+"hearing voices delusions disorganized thinking",schizophrenia
+"extreme mood swings impulsivity unstable relationships",borderline_personality_disorder
+"lack of empathy manipulation grandiosity",antisocial_personality_disorder
+"excessive fear of social situations avoidance",social_anxiety_disorder
+"fear of specific objects or situations avoidance",specific_phobia
+"fear of panic attacks avoidance of situations",panic_disorder
+"fear of leaving home or safe places",agoraphobia
+"excessive need for orderliness perfectionism control",obsessive_compulsive_personality_disorder
+"dramatic emotional behavior attention seeking",histrionic_personality_disorder
+"grandiose sense of self importance lack of empathy",narcissistic_personality_disorder
+"social isolation odd behavior eccentric thinking",schizotypal_personality_disorder
+"distrust of others suspiciousness paranoid thoughts",paranoid_personality_disorder
+"emotional instability fear of abandonment",dependent_personality_disorder
+"social inhibition feelings of inadequacy hypersensitivity",avoidant_personality_disorder
+"fever body aches headache fatigue muscle pain",viral_infection
+"runny nose sneezing congestion sore throat",upper_respiratory_infection
+"ear pain hearing loss discharge from ear",ear_infection
+"eye redness itching discharge blurred vision",conjunctivitis
+"toothache jaw pain sensitivity to hot cold",dental_infection
+"skin infection redness swelling pus formation",cellulitis
+"vaginal itching discharge burning sensation",yeast_infection
+"genital sores painful urination discharge",sexually_transmitted_infection
+"food poisoning nausea vomiting diarrhea abdominal cramps",food_poisoning
+"dehydration dry mouth dizziness weakness",dehydration
+"heat exhaustion excessive sweating weakness nausea",heat_stroke
+"frostbite numbness tingling skin discoloration",hypothermia
+"burns pain redness blistering",burn_injury
+"cuts bleeding pain swelling",wound_infection
+"fracture pain swelling inability to move",bone_fracture
+"sprain pain swelling bruising limited movement",sprain
+"strain muscle pain stiffness weakness",muscle_strain
+"concussion headache confusion memory problems",head_injury
+"back pain stiffness muscle spasms",back_injury
+"neck pain stiffness headache",neck_injury
+"shoulder pain limited range of motion weakness",shoulder_injury
+"knee pain swelling stiffness clicking sounds",knee_injury
+"ankle pain swelling bruising difficulty walking",ankle_injury
+"wrist pain swelling numbness tingling",wrist_injury
+"hip pain stiffness difficulty walking",hip_injury
+"elbow pain swelling stiffness",elbow_injury
+"finger pain swelling stiffness",finger_injury
+"toe pain swelling difficulty walking",toe_injury
+"pregnancy nausea morning sickness missed period",pregnancy
+"menstrual cramps heavy bleeding irregular periods",menstrual_disorders
+"hot flashes night sweats mood changes",menopause
+"erectile dysfunction decreased libido",sexual_dysfunction
+"infertility difficulty conceiving irregular cycles",infertility
+"prostate enlargement difficulty urinating frequent urination",prostate_problems
+"kidney stones severe pain blood in urine",kidney_stones
+"bladder infection frequent urination burning pain",bladder_infection
+"liver disease yellowing fatigue abdominal pain",liver_disease
+"gallbladder disease abdominal pain nausea vomiting",gallbladder_disease
+"pancreatic disease abdominal pain weight loss",pancreatic_disease
+"thyroid problems fatigue weight changes mood changes",thyroid_disease
+"adrenal problems fatigue weakness salt cravings",adrenal_disease
+"pituitary problems hormone imbalances growth issues",pituitary_disease
+"autoimmune disease joint pain fatigue rash",autoimmune_disease
+"immune deficiency frequent infections slow healing",immune_deficiency
+"allergies sneezing itching rash hives",allergies
+"asthma wheezing coughing chest tightness",asthma
+"chronic obstructive pulmonary disease shortness of breath cough",copd
+"sleep apnea snoring daytime fatigue",sleep_disorders
+"insomnia difficulty falling asleep staying asleep",insomnia
+"narcolepsy excessive daytime sleepiness sudden sleep attacks",narcolepsy
+"restless leg syndrome uncomfortable leg sensations urge to move",restless_leg_syndrome
+"chronic fatigue syndrome persistent fatigue muscle pain",chronic_fatigue_syndrome
+"fibromyalgia widespread muscle pain tender points fatigue",fibromyalgia
+"irritable bowel syndrome abdominal pain bloating diarrhea constipation",irritable_bowel_syndrome
+"inflammatory bowel disease abdominal pain diarrhea weight loss",inflammatory_bowel_disease
+"celiac disease abdominal pain diarrhea weight loss",celiac_disease
+"lactose intolerance abdominal pain bloating diarrhea",lactose_intolerance
+"acid reflux heartburn chest pain difficulty swallowing",acid_reflux
+"peptic ulcer abdominal pain nausea vomiting",peptic_ulcer
+"gallstones abdominal pain nausea vomiting",gallstones
+"hemorrhoids rectal pain bleeding itching",hemorrhoids
+"constipation difficulty passing stool abdominal pain",constipation
+"diarrhea loose watery stools abdominal cramps",diarrhea

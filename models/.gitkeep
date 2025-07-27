@@ -1,0 +1,6 @@
+# This folder will contain trained models:
+# - ml_model.pkl (RandomForest model)
+# - tfidf_vectorizer.pkl (TF-IDF vectorizer)
+# - dl_model.h5 (LSTM model)
+# - tokenizer.pkl (Keras tokenizer)
+# - label_encoder.pkl (Label encoder for diseases)
