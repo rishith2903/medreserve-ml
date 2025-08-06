@@ -1,0 +1,148 @@
+# MedReserve AI ML Dependencies
+# Core ML and Data Science Libraries
+numpy>=1.21.0
+pandas>=1.3.0
+scikit-learn>=1.0.0
+scipy>=1.7.0
+
+# Natural Language Processing
+nltk>=3.6.0
+textblob>=0.17.0
+
+# Web Framework
+flask>=2.0.0
+flask-cors>=3.0.0
+
+# Model Persistence
+joblib>=1.1.0
+pickle-mixin>=1.0.0
+
+# Data Visualization (optional, for model analysis)
+matplotlib>=3.4.0
+seaborn>=0.11.0
+
+# Progress Bars and Utilities
+tqdm>=4.62.0
+
+# Environment and Configuration
+python-dotenv>=0.19.0
+
+# Logging and Monitoring
+loguru>=0.5.0
+
+# Testing (optional)
+pytest>=6.2.0
+pytest-flask>=1.2.0
+
+# Performance Optimization
+numba>=0.54.0
+
+# Additional NLP Libraries (optional)
+spacy>=3.4.0
+transformers>=4.20.0
+
+# Deep Learning (optional, if using neural networks)
+tensorflow>=2.8.0
+torch>=1.11.0
+
+# Data Preprocessing
+imbalanced-learn>=0.8.0
+feature-engine>=1.4.0
+
+# Model Evaluation
+yellowbrick>=1.4.0
+
+# API Documentation (optional)
+flask-restx>=0.5.0
+flasgger>=0.9.0
+
+# Security
+werkzeug>=2.0.0
+
+# Memory Optimization
+psutil>=5.8.0
+
+# Date and Time Utilities
+python-dateutil>=2.8.0
+
+# Configuration Management
+pyyaml>=6.0
+
+# HTTP Requests (for external API calls)
+requests>=2.26.0
+
+# JSON Handling
+ujson>=4.2.0
+
+# Parallel Processing
+multiprocessing-logging>=0.3.0
+
+# Model Interpretability (optional)
+shap>=0.40.0
+lime>=0.2.0
+
+# Hyperparameter Tuning (optional)
+optuna>=2.10.0
+hyperopt>=0.2.0
+
+# Model Monitoring (optional)
+mlflow>=1.20.0
+
+# Data Validation
+cerberus>=1.3.0
+marshmallow>=3.14.0
+
+# Caching
+redis>=3.5.0
+diskcache>=5.4.0
+
+# Database Connectivity (if needed)
+sqlalchemy>=1.4.0
+pymongo>=3.12.0
+
+# File Handling
+openpyxl>=3.0.0
+xlrd>=2.0.0
+
+# Image Processing (if needed for medical images)
+pillow>=8.3.0
+opencv-python>=4.5.0
+
+# Audio Processing (if needed for voice symptoms)
+librosa>=0.8.0
+soundfile>=0.10.0
+
+# Geospatial (if needed for location-based features)
+geopy>=2.2.0
+
+# Time Series (if needed for temporal symptoms)
+statsmodels>=0.12.0
+
+# Graph Processing (if needed for medical knowledge graphs)
+networkx>=2.6.0
+
+# Fuzzy Matching (for symptom matching)
+fuzzywuzzy>=0.18.0
+python-levenshtein>=0.12.0
+
+# Medical Data Standards (optional)
+pydicom>=2.2.0
+hl7>=0.4.0
+
+# Encryption and Security
+cryptography>=3.4.0
+
+# Environment Detection
+platform>=1.0.0
+
+# Memory Profiling
+memory-profiler>=0.60.0
+
+# Code Quality (development)
+black>=21.9.0
+flake8>=3.9.0
+isort>=5.9.0
+
+# Documentation (development)
+sphinx>=4.2.0
+sphinx-rtd-theme>=1.0.0
