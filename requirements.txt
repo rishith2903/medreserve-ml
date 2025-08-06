@@ -1,25 +1,41 @@
 # MedReserve AI ML Dependencies
+# Merged requirements combining FastAPI chatbot and comprehensive ML capabilities
+
 # Core ML and Data Science Libraries
 numpy>=1.21.0
 pandas>=1.3.0
 scikit-learn>=1.0.0
 scipy>=1.7.0
 
+# FastAPI and Web Framework (from HEAD)
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+httpx==0.25.2
+
+# Authentication and Security (from HEAD)
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Deep Learning Frameworks
+tensorflow>=2.13.0,<2.16.0
+torch>=1.11.0
+
 # Natural Language Processing
-nltk>=3.6.0
+nltk>=3.7,<3.9.0
+spacy>=3.4.0,<3.8.0
 textblob>=0.17.0
+transformers>=4.20.0
 
-# Web Framework
-flask>=2.0.0
-flask-cors>=3.0.0
+# Data Visualization
+matplotlib>=3.5.0,<3.9.0
+seaborn>=0.11.0,<0.14.0
 
-# Model Persistence
+# Model Persistence and Utilities
 joblib>=1.1.0
+h5py>=3.7.0,<3.12.0
 pickle-mixin>=1.0.0
-
-# Data Visualization (optional, for model analysis)
-matplotlib>=3.4.0
-seaborn>=0.11.0
 
 # Progress Bars and Utilities
 tqdm>=4.62.0
@@ -30,20 +46,12 @@ python-dotenv>=0.19.0
 # Logging and Monitoring
 loguru>=0.5.0
 
-# Testing (optional)
+# Testing
 pytest>=6.2.0
 pytest-flask>=1.2.0
 
 # Performance Optimization
 numba>=0.54.0
-
-# Additional NLP Libraries (optional)
-spacy>=3.4.0
-transformers>=4.20.0
-
-# Deep Learning (optional, if using neural networks)
-tensorflow>=2.8.0
-torch>=1.11.0
 
 # Data Preprocessing
 imbalanced-learn>=0.8.0
@@ -52,15 +60,17 @@ feature-engine>=1.4.0
 # Model Evaluation
 yellowbrick>=1.4.0
 
-# API Documentation (optional)
+# API Documentation
 flask-restx>=0.5.0
 flasgger>=0.9.0
 
 # Security
 werkzeug>=2.0.0
+cryptography>=3.4.0
 
 # Memory Optimization
 psutil>=5.8.0
+memory-profiler>=0.60.0
 
 # Date and Time Utilities
 python-dateutil>=2.8.0
@@ -68,7 +78,7 @@ python-dateutil>=2.8.0
 # Configuration Management
 pyyaml>=6.0
 
-# HTTP Requests (for external API calls)
+# HTTP Requests
 requests>=2.26.0
 
 # JSON Handling
@@ -77,15 +87,15 @@ ujson>=4.2.0
 # Parallel Processing
 multiprocessing-logging>=0.3.0
 
-# Model Interpretability (optional)
+# Model Interpretability
 shap>=0.40.0
 lime>=0.2.0
 
-# Hyperparameter Tuning (optional)
+# Hyperparameter Tuning
 optuna>=2.10.0
 hyperopt>=0.2.0
 
-# Model Monitoring (optional)
+# Model Monitoring
 mlflow>=1.20.0
 
 # Data Validation
@@ -96,7 +106,7 @@ marshmallow>=3.14.0
 redis>=3.5.0
 diskcache>=5.4.0
 
-# Database Connectivity (if needed)
+# Database Connectivity
 sqlalchemy>=1.4.0
 pymongo>=3.12.0
 
@@ -104,39 +114,33 @@ pymongo>=3.12.0
 openpyxl>=3.0.0
 xlrd>=2.0.0
 
-# Image Processing (if needed for medical images)
+# Image Processing
 pillow>=8.3.0
 opencv-python>=4.5.0
 
-# Audio Processing (if needed for voice symptoms)
+# Audio Processing
 librosa>=0.8.0
 soundfile>=0.10.0
 
-# Geospatial (if needed for location-based features)
+# Geospatial
 geopy>=2.2.0
 
-# Time Series (if needed for temporal symptoms)
+# Time Series
 statsmodels>=0.12.0
 
-# Graph Processing (if needed for medical knowledge graphs)
+# Graph Processing
 networkx>=2.6.0
 
-# Fuzzy Matching (for symptom matching)
+# Fuzzy Matching
 fuzzywuzzy>=0.18.0
 python-levenshtein>=0.12.0
 
-# Medical Data Standards (optional)
+# Medical Data Standards
 pydicom>=2.2.0
 hl7>=0.4.0
 
-# Encryption and Security
-cryptography>=3.4.0
-
 # Environment Detection
 platform>=1.0.0
-
-# Memory Profiling
-memory-profiler>=0.60.0
 
 # Code Quality (development)
 black>=21.9.0

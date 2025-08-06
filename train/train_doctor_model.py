@@ -295,8 +295,107 @@ class DoctorDiagnosisModel:
         
         self.feature_names = feature_names
         
-        return self.disease_model, self.medicine_model
-    
+        return disease_accuracy, 1.0 - medicine_hamming
+
+    def train_models_simple(self, X_data, y_disease_data, y_medicine_data):
+        """
+        Train both disease and medicine prediction models with simple X, y format
+        """
+        print("Training Doctor Diagnosis Models (Simple)...")
+
+        # Convert to lists if needed
+        if hasattr(X_data, 'tolist'):
+            symptoms_text = X_data.tolist()
+        else:
+            symptoms_text = list(X_data)
+
+        if hasattr(y_disease_data, 'tolist'):
+            diseases = y_disease_data.tolist()
+        else:
+            diseases = list(y_disease_data)
+
+        if hasattr(y_medicine_data, 'tolist'):
+            medicines_text = y_medicine_data.tolist()
+        else:
+            medicines_text = list(y_medicine_data)
+
+        # Process medicines (split by comma)
+        medicines_lists = []
+        for med_text in medicines_text:
+            if isinstance(med_text, str):
+                medicines_lists.append([med.strip() for med in med_text.split(',')])
+            else:
+                medicines_lists.append([str(med_text)])
+
+        # Fit NLP pipeline
+        print("Fitting NLP pipeline...")
+        self.nlp_pipeline.fit_vectorizer(symptoms_text, max_features=5000)
+
+        # Vectorize symptoms
+        print("Vectorizing symptoms...")
+        X = self.nlp_pipeline.vectorize_text(symptoms_text)
+
+        # Prepare disease labels
+        print("Encoding diseases...")
+        self.disease_encoder = LabelEncoder()
+        y_diseases = self.disease_encoder.fit_transform(diseases)
+
+        # Prepare medicine labels (multi-label)
+        print("Encoding medicines...")
+        self.medicine_encoder = MultiLabelBinarizer()
+        y_medicines = self.medicine_encoder.fit_transform(medicines_lists)
+
+        print(f"Training data shape: {X.shape}")
+        print(f"Number of diseases: {len(self.disease_encoder.classes_)}")
+        print(f"Number of medicines: {len(self.medicine_encoder.classes_)}")
+
+        # Split data
+        X_train, X_test, y_diseases_train, y_diseases_test, y_medicines_train, y_medicines_test = train_test_split(
+            X, y_diseases, y_medicines, test_size=0.2, random_state=42
+        )
+
+        # Train disease prediction model
+        print("Training disease prediction model...")
+        self.disease_model = RandomForestClassifier(
+            n_estimators=100,
+            max_depth=20,
+            min_samples_split=5,
+            min_samples_leaf=2,
+            random_state=42,
+            class_weight='balanced'
+        )
+
+        self.disease_model.fit(X_train, y_diseases_train)
+
+        # Evaluate disease model
+        y_diseases_pred = self.disease_model.predict(X_test)
+        disease_accuracy = accuracy_score(y_diseases_test, y_diseases_pred)
+        print(f"Disease prediction accuracy: {disease_accuracy:.4f}")
+
+        # Train medicine prediction model (multi-label)
+        print("Training medicine prediction model...")
+        self.medicine_model = MultiOutputClassifier(
+            RandomForestClassifier(
+                n_estimators=50,
+                max_depth=15,
+                min_samples_split=5,
+                random_state=42
+            )
+        )
+
+        self.medicine_model.fit(X_train, y_medicines_train)
+
+        # Evaluate medicine model
+        y_medicines_pred = self.medicine_model.predict(X_test)
+        medicine_hamming = hamming_loss(y_medicines_test, y_medicines_pred)
+        print(f"Medicine prediction hamming loss: {medicine_hamming:.4f}")
+
+        # Feature importance for disease model
+        feature_names = self.nlp_pipeline.tfidf_vectorizer.get_feature_names_out()
+        self.feature_names = feature_names
+
+        return disease_accuracy, 1.0 - medicine_hamming
+
     def predict_diagnosis(self, symptoms_text: str, top_diseases: int = 5, top_medicines: int = 5) -> Dict:
         """
         Predict diseases and medicines for given symptoms

@@ -1,357 +1,261 @@
-#!/usr/bin/env python3
 """
-MedReserve AI - Complete Model Training Script
-Trains both patient-to-specialization and doctor-to-diagnosis models
+Train All MedReserve AI Models
+Generates sample medical data and trains both patient and doctor models
 """
 
 import os
 import sys
-import time
-import logging
+import pandas as pd
+import numpy as np
 from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('training.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-logger = logging.getLogger(__name__)
+# Add current directory to path for imports
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-def setup_environment():
+from train.train_patient_model import PatientSpecializationModel
+from train.train_doctor_model import DoctorDiagnosisModel
+
+def create_sample_medical_data():
     """
-    Setup the training environment
+    Create comprehensive sample medical datasets for training
     """
-    logger.info("Setting up training environment...")
+    print("🏥 Creating sample medical datasets...")
     
-    # Create necessary directories
-    directories = [
-        'models',
-        'logs',
-        'results'
+    # Sample diseases and their symptoms
+    medical_data = [
+        # Cardiology
+        ("Chest pain, shortness of breath, fatigue", "Heart Disease", "Cardiology", "Aspirin, Beta-blockers"),
+        ("Irregular heartbeat, dizziness, chest discomfort", "Arrhythmia", "Cardiology", "Antiarrhythmic drugs"),
+        ("High blood pressure, headache, blurred vision", "Hypertension", "Cardiology", "ACE inhibitors, Diuretics"),
+        ("Chest pain during exercise, shortness of breath", "Angina", "Cardiology", "Nitroglycerin, Beta-blockers"),
+        
+        # Neurology
+        ("Severe headache, nausea, sensitivity to light", "Migraine", "Neurology", "Sumatriptan, Pain relievers"),
+        ("Memory loss, confusion, difficulty speaking", "Dementia", "Neurology", "Cholinesterase inhibitors"),
+        ("Tremor, stiffness, slow movement", "Parkinson's Disease", "Neurology", "Levodopa, Dopamine agonists"),
+        ("Seizures, loss of consciousness, confusion", "Epilepsy", "Neurology", "Anticonvulsants"),
+        
+        # Dermatology
+        ("Red, itchy, scaly skin patches", "Eczema", "Dermatology", "Topical corticosteroids, Moisturizers"),
+        ("Red, raised, scaly patches on skin", "Psoriasis", "Dermatology", "Topical treatments, Immunosuppressants"),
+        ("Painful, fluid-filled blisters", "Herpes", "Dermatology", "Antiviral medications"),
+        ("Itchy, red, swollen skin", "Allergic Reaction", "Dermatology", "Antihistamines, Corticosteroids"),
+        
+        # Orthopedics
+        ("Joint pain, stiffness, swelling", "Arthritis", "Orthopedics", "NSAIDs, Physical therapy"),
+        ("Back pain, muscle spasms, limited mobility", "Back Pain", "Orthopedics", "Pain relievers, Muscle relaxants"),
+        ("Bone pain, fracture, swelling", "Bone Fracture", "Orthopedics", "Pain medication, Immobilization"),
+        ("Knee pain, swelling, difficulty walking", "Knee Injury", "Orthopedics", "NSAIDs, Physical therapy"),
+        
+        # Gastroenterology
+        ("Abdominal pain, nausea, vomiting", "Gastritis", "Gastroenterology", "Proton pump inhibitors, Antacids"),
+        ("Heartburn, acid reflux, chest pain", "GERD", "Gastroenterology", "Proton pump inhibitors"),
+        ("Diarrhea, abdominal cramps, fever", "Food Poisoning", "Gastroenterology", "Fluids, Electrolytes"),
+        ("Constipation, abdominal pain, bloating", "IBS", "Gastroenterology", "Fiber supplements, Antispasmodics"),
+        
+        # Pulmonology
+        ("Cough, shortness of breath, wheezing", "Asthma", "Pulmonology", "Bronchodilators, Corticosteroids"),
+        ("Persistent cough, chest pain, fever", "Pneumonia", "Pulmonology", "Antibiotics, Rest"),
+        ("Chronic cough, mucus production, fatigue", "COPD", "Pulmonology", "Bronchodilators, Oxygen therapy"),
+        ("Sudden chest pain, difficulty breathing", "Pneumothorax", "Pulmonology", "Chest tube, Surgery"),
+        
+        # Endocrinology
+        ("Increased thirst, frequent urination, fatigue", "Diabetes", "Endocrinology", "Insulin, Metformin"),
+        ("Weight gain, fatigue, cold intolerance", "Hypothyroidism", "Endocrinology", "Levothyroxine"),
+        ("Weight loss, rapid heartbeat, anxiety", "Hyperthyroidism", "Endocrinology", "Antithyroid medications"),
+        ("Excessive hunger, weight loss, fatigue", "Type 1 Diabetes", "Endocrinology", "Insulin therapy"),
+        
+        # Psychiatry
+        ("Persistent sadness, loss of interest, fatigue", "Depression", "Psychiatry", "Antidepressants, Therapy"),
+        ("Excessive worry, restlessness, panic attacks", "Anxiety", "Psychiatry", "Anxiolytics, Therapy"),
+        ("Mood swings, manic episodes, depression", "Bipolar Disorder", "Psychiatry", "Mood stabilizers"),
+        ("Hallucinations, delusions, disorganized thinking", "Schizophrenia", "Psychiatry", "Antipsychotics"),
+        
+        # Ophthalmology
+        ("Blurred vision, eye pain, halos around lights", "Glaucoma", "Ophthalmology", "Eye drops, Surgery"),
+        ("Cloudy vision, difficulty seeing at night", "Cataracts", "Ophthalmology", "Surgery"),
+        ("Red, itchy, watery eyes", "Conjunctivitis", "Ophthalmology", "Antibiotic drops"),
+        ("Sudden vision loss, eye pain", "Retinal Detachment", "Ophthalmology", "Emergency surgery"),
+        
+        # ENT (Otolaryngology)
+        ("Sore throat, difficulty swallowing, fever", "Strep Throat", "ENT", "Antibiotics, Pain relievers"),
+        ("Ear pain, hearing loss, discharge", "Ear Infection", "ENT", "Antibiotics, Pain relievers"),
+        ("Nasal congestion, facial pain, headache", "Sinusitis", "ENT", "Decongestants, Antibiotics"),
+        ("Hoarse voice, throat pain, cough", "Laryngitis", "ENT", "Voice rest, Humidifier"),
+        
+        # Urology
+        ("Painful urination, frequent urination, urgency", "UTI", "Urology", "Antibiotics, Fluids"),
+        ("Blood in urine, flank pain, nausea", "Kidney Stones", "Urology", "Pain medication, Fluids"),
+        ("Difficulty urinating, weak stream", "Prostate Problems", "Urology", "Alpha blockers"),
+        ("Pelvic pain, urinary incontinence", "Bladder Issues", "Urology", "Anticholinergics"),
+        
+        # Gynecology
+        ("Irregular periods, pelvic pain, heavy bleeding", "Menstrual Disorders", "Gynecology", "Hormonal therapy"),
+        ("Pelvic pain, painful periods, infertility", "Endometriosis", "Gynecology", "Hormonal therapy, Surgery"),
+        ("Vaginal discharge, itching, burning", "Yeast Infection", "Gynecology", "Antifungal medication"),
+        ("Missed period, nausea, breast tenderness", "Pregnancy", "Gynecology", "Prenatal vitamins"),
+        
+        # Pediatrics
+        ("Fever, runny nose, cough in child", "Common Cold", "Pediatrics", "Rest, Fluids, Fever reducers"),
+        ("Rash, fever, sore throat in child", "Viral Infection", "Pediatrics", "Supportive care"),
+        ("Ear pain, fever, irritability in child", "Pediatric Ear Infection", "Pediatrics", "Antibiotics"),
+        ("Stomach pain, vomiting, diarrhea in child", "Gastroenteritis", "Pediatrics", "Fluids, Rest"),
+        
+        # General Medicine
+        ("Fever, body aches, fatigue", "Flu", "General Medicine", "Rest, Fluids, Antivirals"),
+        ("Runny nose, sneezing, mild fever", "Common Cold", "General Medicine", "Rest, Fluids"),
+        ("Fatigue, weakness, pale skin", "Anemia", "General Medicine", "Iron supplements"),
+        ("High fever, chills, body aches", "Infection", "General Medicine", "Antibiotics, Rest"),
+
+        # Additional samples for better training
+        ("Chest tightness, palpitations", "Heart Palpitations", "Cardiology", "Beta-blockers"),
+        ("Leg swelling, shortness of breath", "Heart Failure", "Cardiology", "Diuretics, ACE inhibitors"),
+        ("Sudden severe headache, neck stiffness", "Severe Headache", "Neurology", "Pain relievers, Imaging"),
+        ("Numbness in hands, tingling", "Neuropathy", "Neurology", "Gabapentin, Vitamin B12"),
+        ("Dry skin, itching, redness", "Dry Skin", "Dermatology", "Moisturizers, Topical steroids"),
+        ("Hair loss, scalp irritation", "Alopecia", "Dermatology", "Minoxidil, Topical treatments"),
+        ("Joint swelling, morning stiffness", "Rheumatoid Arthritis", "Orthopedics", "DMARDs, NSAIDs"),
+        ("Muscle weakness, bone pain", "Osteoporosis", "Orthopedics", "Calcium, Vitamin D"),
+        ("Acid reflux, stomach pain", "Peptic Ulcer", "Gastroenterology", "Proton pump inhibitors"),
+        ("Bloating, gas, stomach cramps", "Digestive Issues", "Gastroenterology", "Probiotics, Digestive enzymes"),
+        ("Persistent cough, chest tightness", "Bronchitis", "Pulmonology", "Bronchodilators, Cough suppressants"),
+        ("Difficulty breathing, chest pain", "Respiratory Issues", "Pulmonology", "Inhalers, Oxygen therapy"),
+        ("Excessive sweating, heat intolerance", "Thyroid Issues", "Endocrinology", "Thyroid medications"),
+        ("Frequent infections, slow healing", "Immune System Issues", "Endocrinology", "Immune boosters"),
+        ("Mood changes, sleep problems", "Mental Health", "Psychiatry", "Antidepressants, Sleep aids"),
+        ("Panic attacks, racing heart", "Panic Disorder", "Psychiatry", "Anti-anxiety medications"),
+        ("Eye redness, vision changes", "Eye Problems", "Ophthalmology", "Eye drops, Vision correction"),
+        ("Double vision, eye strain", "Vision Problems", "Ophthalmology", "Corrective lenses"),
+        ("Hearing loss, ear ringing", "Hearing Problems", "ENT", "Hearing aids, Tinnitus treatment"),
+        ("Throat clearing, voice changes", "Voice Problems", "ENT", "Voice therapy, Anti-inflammatories"),
+        ("Urinary frequency, burning", "Bladder Infection", "Urology", "Antibiotics, Increased fluids"),
+        ("Kidney pain, blood in urine", "Kidney Problems", "Urology", "Pain medication, Antibiotics"),
+        ("Irregular cycles, cramping", "Menstrual Problems", "Gynecology", "Hormonal therapy, Pain relievers"),
+        ("Pelvic pressure, discomfort", "Pelvic Issues", "Gynecology", "Physical therapy, Hormones"),
+        ("Fever in child, loss of appetite", "Childhood Illness", "Pediatrics", "Fever reducers, Fluids"),
+        ("Growth concerns, developmental delays", "Developmental Issues", "Pediatrics", "Nutritional support"),
+        ("Muscle aches, joint pain", "Fibromyalgia", "General Medicine", "Pain relievers, Exercise"),
+        ("Chronic fatigue, weakness", "Chronic Fatigue", "General Medicine", "Energy supplements, Rest")
     ]
     
-    for directory in directories:
-        os.makedirs(directory, exist_ok=True)
-        logger.info(f"Created directory: {directory}")
+    # Create DataFrame
+    df = pd.DataFrame(medical_data, columns=['symptoms', 'disease', 'specialization', 'medicine'])
     
-    # Check if datasets exist
-    dataset_paths = [
-        'dataset/Disease-Symptom Dataset/Final_Augmented_dataset_Diseases_and_Symptoms.csv',
-        'dataset/Doctor\'s Specialty Recommendation/Doctor_Versus_Disease.csv',
-        'dataset/Symptom2Disease/Symptom2Disease.csv',
-        'dataset/Disease Symptoms and Patient Profile Dataset/Disease_symptom_and_patient_profile_dataset.csv'
-    ]
+    # Save datasets
+    dataset_dir = "backend/ml/dataset"
+    os.makedirs(dataset_dir, exist_ok=True)
     
-    missing_datasets = []
-    for path in dataset_paths:
-        if not os.path.exists(path):
-            missing_datasets.append(path)
+    # Save main dataset
+    df.to_csv(f"{dataset_dir}/medical_training_data.csv", index=False)
     
-    if missing_datasets:
-        logger.warning("Missing datasets:")
-        for dataset in missing_datasets:
-            logger.warning(f"  - {dataset}")
-        logger.warning("Training will proceed with available datasets")
-    else:
-        logger.info("All datasets found!")
+    # Create patient specialization dataset (symptoms -> specialization)
+    patient_df = df[['symptoms', 'specialization']].copy()
+    patient_df.to_csv(f"{dataset_dir}/patient_specialization_data.csv", index=False)
     
-    return True
+    # Create doctor diagnosis dataset (symptoms -> disease + medicine)
+    doctor_df = df[['symptoms', 'disease', 'medicine']].copy()
+    doctor_df.to_csv(f"{dataset_dir}/doctor_diagnosis_data.csv", index=False)
+    
+    print(f"✅ Created datasets with {len(df)} medical cases")
+    print(f"   - Patient specialization: {len(patient_df)} cases")
+    print(f"   - Doctor diagnosis: {len(doctor_df)} cases")
+    
+    return patient_df, doctor_df
 
-def install_dependencies():
-    """
-    Install required dependencies
-    """
-    logger.info("Installing dependencies...")
-    
-    try:
-        import subprocess
-        
-        # Install basic requirements
-        basic_requirements = [
-            'numpy', 'pandas', 'scikit-learn', 'nltk', 
-            'flask', 'flask-cors', 'joblib'
-        ]
-        
-        for package in basic_requirements:
-            try:
-                __import__(package.replace('-', '_'))
-                logger.info(f"✓ {package} already installed")
-            except ImportError:
-                logger.info(f"Installing {package}...")
-                subprocess.check_call([sys.executable, '-m', 'pip', 'install', package])
-                logger.info(f"✓ {package} installed successfully")
-        
-        # Download NLTK data
-        import nltk
-        nltk_downloads = ['punkt', 'stopwords', 'wordnet', 'averaged_perceptron_tagger']
-        
-        for item in nltk_downloads:
-            try:
-                nltk.data.find(f'tokenizers/{item}' if item == 'punkt' else f'corpora/{item}')
-                logger.info(f"✓ NLTK {item} already downloaded")
-            except LookupError:
-                logger.info(f"Downloading NLTK {item}...")
-                nltk.download(item, quiet=True)
-                logger.info(f"✓ NLTK {item} downloaded")
-        
-        return True
-        
-    except Exception as e:
-        logger.error(f"Error installing dependencies: {e}")
-        return False
-
-def train_patient_model():
+def train_patient_model(patient_data):
     """
     Train the patient to specialization model
     """
-    logger.info("=" * 60)
-    logger.info("TRAINING PATIENT TO SPECIALIZATION MODEL")
-    logger.info("=" * 60)
+    print("\n🤖 Training Patient → Specialization Model...")
     
     try:
-        from train.train_patient_model import PatientSpecializationModel
-        
-        # Initialize and train model
         model = PatientSpecializationModel()
         
-        # Load and prepare data
-        logger.info("Loading and preparing patient data...")
-        symptoms_df, specializations_df = model.load_and_prepare_data()
+        # Prepare data for training
+        X = patient_data['symptoms'].values
+        y = patient_data['specialization'].values
         
         # Train model
-        logger.info("Training patient model...")
-        start_time = time.time()
-        model.train_model(symptoms_df, specializations_df)
-        training_time = time.time() - start_time
+        accuracy = model.train_model_simple(X, y)
         
         # Save model
-        logger.info("Saving patient model...")
-        model.save_model()
+        model_dir = "models"
+        os.makedirs(model_dir, exist_ok=True)
+        model.save_model(model_dir)
         
-        logger.info(f"✓ Patient model training completed in {training_time:.2f} seconds")
-        
-        # Test model
-        logger.info("Testing patient model...")
-        test_symptoms = [
-            "I have severe chest pain and shortness of breath",
-            "Experiencing headache, dizziness and nausea for 3 days",
-            "Skin rash with itching and redness",
-            "Joint pain and stiffness in the morning"
-        ]
-        
-        for symptoms in test_symptoms:
-            predictions = model.predict_specialization(symptoms, top_k=2)
-            logger.info(f"Symptoms: {symptoms}")
-            for spec, prob in predictions:
-                logger.info(f"  → {spec}: {prob:.3f}")
-        
+        print(f"✅ Patient model trained successfully! Accuracy: {accuracy:.2%}")
         return True
         
     except Exception as e:
-        logger.error(f"Error training patient model: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
+        print(f"❌ Error training patient model: {e}")
         return False
 
-def train_doctor_model():
+def train_doctor_model(doctor_data):
     """
-    Train the doctor to diagnosis model
+    Train the doctor diagnosis model
     """
-    logger.info("=" * 60)
-    logger.info("TRAINING DOCTOR TO DIAGNOSIS MODEL")
-    logger.info("=" * 60)
+    print("\n🩺 Training Doctor → Diagnosis Model...")
     
     try:
-        from train.train_doctor_model import DoctorDiagnosisModel
-        
-        # Initialize and train model
         model = DoctorDiagnosisModel()
         
-        # Load and prepare data
-        logger.info("Loading and preparing doctor data...")
-        symptoms_df, diseases_df, medicines_df = model.load_and_prepare_data()
+        # Prepare data for training
+        X = doctor_data['symptoms'].values
+        y_disease = doctor_data['disease'].values
+        y_medicine = doctor_data['medicine'].values
         
-        # Train models
-        logger.info("Training doctor models...")
-        start_time = time.time()
-        model.train_models(symptoms_df, diseases_df, medicines_df)
-        training_time = time.time() - start_time
+        # Train model
+        disease_accuracy, medicine_accuracy = model.train_models_simple(X, y_disease, y_medicine)
         
-        # Save models
-        logger.info("Saving doctor models...")
-        model.save_models()
+        # Save model
+        model_dir = "models"
+        os.makedirs(model_dir, exist_ok=True)
+        model.save_models(model_dir)
         
-        logger.info(f"✓ Doctor model training completed in {training_time:.2f} seconds")
-        
-        # Test model
-        logger.info("Testing doctor model...")
-        test_symptoms = [
-            "Patient presents with chest pain, shortness of breath, and sweating",
-            "Severe headache with nausea, vomiting, and sensitivity to light",
-            "Persistent cough with fever and difficulty breathing"
-        ]
-        
-        for symptoms in test_symptoms:
-            diagnosis = model.predict_diagnosis(symptoms, top_diseases=2, top_medicines=2)
-            logger.info(f"Symptoms: {symptoms}")
-            logger.info("Diseases:")
-            for disease, prob in diagnosis['diseases']:
-                logger.info(f"  → {disease}: {prob:.3f}")
-            logger.info("Medicines:")
-            for medicine, prob in diagnosis['medicines']:
-                logger.info(f"  → {medicine}: {prob:.3f}")
-        
+        print(f"✅ Doctor model trained successfully!")
+        print(f"   - Disease prediction accuracy: {disease_accuracy:.2%}")
+        print(f"   - Medicine prediction accuracy: {medicine_accuracy:.2%}")
         return True
         
     except Exception as e:
-        logger.error(f"Error training doctor model: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
+        print(f"❌ Error training doctor model: {e}")
         return False
-
-def test_api():
-    """
-    Test the ML API
-    """
-    logger.info("=" * 60)
-    logger.info("TESTING ML API")
-    logger.info("=" * 60)
-    
-    try:
-        # Test prediction scripts
-        from predict.predict_specialization import SpecializationPredictor, fallback_specialization_prediction
-        from predict.predict_disease_medicine import DiseaseMedicinePredictor
-        
-        # Test specialization prediction
-        logger.info("Testing specialization prediction...")
-        try:
-            predictor = SpecializationPredictor()
-            predictor.load_model()
-            result = predictor.predict_specializations("chest pain and shortness of breath", top_k=2)
-            logger.info(f"✓ Specialization prediction working: {len(result['specializations'])} results")
-        except Exception as e:
-            logger.warning(f"Specialization model not available, testing fallback: {e}")
-            result = fallback_specialization_prediction("chest pain and shortness of breath", top_k=2)
-            logger.info(f"✓ Fallback specialization prediction working: {len(result['specializations'])} results")
-        
-        # Test diagnosis prediction
-        logger.info("Testing diagnosis prediction...")
-        try:
-            predictor = DiseaseMedicinePredictor()
-            predictor.load_models()
-            result = predictor.predict_diagnosis("chest pain and shortness of breath", top_diseases=2, top_medicines=2)
-            logger.info(f"✓ Diagnosis prediction working: {len(result['diseases'])} diseases, {len(result['medicines'])} medicines")
-        except Exception as e:
-            logger.warning(f"Diagnosis model not available, testing fallback: {e}")
-            predictor = DiseaseMedicinePredictor()
-            result = predictor.predict_diagnosis("chest pain and shortness of breath", top_diseases=2, top_medicines=2)
-            logger.info(f"✓ Fallback diagnosis prediction working: {len(result['diseases'])} diseases, {len(result['medicines'])} medicines")
-        
-        return True
-        
-    except Exception as e:
-        logger.error(f"Error testing API: {e}")
-        return False
-
-def generate_report():
-    """
-    Generate training report
-    """
-    logger.info("=" * 60)
-    logger.info("GENERATING TRAINING REPORT")
-    logger.info("=" * 60)
-    
-    report = {
-        'timestamp': datetime.now().isoformat(),
-        'models_trained': [],
-        'files_created': [],
-        'status': 'completed'
-    }
-    
-    # Check created files
-    model_files = [
-        'models/patient_to_specialization_model.pkl',
-        'models/patient_nlp_pipeline.pkl',
-        'models/patient_label_encoder.pkl',
-        'models/doctor_disease_model.pkl',
-        'models/doctor_medicine_model.pkl',
-        'models/doctor_nlp_pipeline.pkl',
-        'models/doctor_disease_encoder.pkl',
-        'models/doctor_medicine_encoder.pkl'
-    ]
-    
-    for file_path in model_files:
-        if os.path.exists(file_path):
-            file_size = os.path.getsize(file_path) / (1024 * 1024)  # MB
-            report['files_created'].append({
-                'file': file_path,
-                'size_mb': round(file_size, 2)
-            })
-            logger.info(f"✓ {file_path} ({file_size:.2f} MB)")
-    
-    # Save report
-    import json
-    with open('results/training_report.json', 'w') as f:
-        json.dump(report, f, indent=2)
-    
-    logger.info(f"Training report saved to: results/training_report.json")
-    return report
 
 def main():
     """
-    Main training function
+    Main training pipeline
     """
-    start_time = time.time()
+    print("🚀 Starting MedReserve AI Model Training Pipeline")
+    print("=" * 60)
     
-    logger.info("🚀 Starting MedReserve AI Model Training")
-    logger.info(f"Start time: {datetime.now()}")
-    
-    # Setup environment
-    if not setup_environment():
-        logger.error("Failed to setup environment")
-        return False
-    
-    # Install dependencies
-    if not install_dependencies():
-        logger.error("Failed to install dependencies")
-        return False
-    
-    # Train models
-    patient_success = train_patient_model()
-    doctor_success = train_doctor_model()
-    
-    # Test API
-    api_success = test_api()
-    
-    # Generate report
-    report = generate_report()
-    
-    # Final summary
-    total_time = time.time() - start_time
-    
-    logger.info("=" * 60)
-    logger.info("TRAINING SUMMARY")
-    logger.info("=" * 60)
-    logger.info(f"Patient Model: {'✓ SUCCESS' if patient_success else '✗ FAILED'}")
-    logger.info(f"Doctor Model: {'✓ SUCCESS' if doctor_success else '✗ FAILED'}")
-    logger.info(f"API Test: {'✓ SUCCESS' if api_success else '✗ FAILED'}")
-    logger.info(f"Total Time: {total_time:.2f} seconds")
-    logger.info(f"Files Created: {len(report['files_created'])}")
-    
-    if patient_success and doctor_success and api_success:
-        logger.info("🎉 ALL MODELS TRAINED SUCCESSFULLY!")
-        logger.info("Ready to start ML API server with: python api/ml_api.py")
-        return True
-    else:
-        logger.error("❌ SOME MODELS FAILED TO TRAIN")
-        return False
+    try:
+        # Create sample data
+        patient_data, doctor_data = create_sample_medical_data()
+        
+        # Train patient model
+        patient_success = train_patient_model(patient_data)
+        
+        # Train doctor model
+        doctor_success = train_doctor_model(doctor_data)
+        
+        # Summary
+        print("\n" + "=" * 60)
+        print("🎯 Training Summary:")
+        print(f"   Patient Model: {'✅ Success' if patient_success else '❌ Failed'}")
+        print(f"   Doctor Model: {'✅ Success' if doctor_success else '❌ Failed'}")
+        
+        if patient_success and doctor_success:
+            print("\n🎉 All models trained successfully!")
+            print("   You can now start the ML API server with: python api/ml_api.py")
+        else:
+            print("\n⚠️  Some models failed to train. Check the error messages above.")
+            
+    except Exception as e:
+        print(f"\n❌ Training pipeline failed: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
-    success = main()
-    sys.exit(0 if success else 1)
+    main()

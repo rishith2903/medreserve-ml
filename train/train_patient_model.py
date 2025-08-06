@@ -263,8 +263,89 @@ class PatientSpecializationModel:
         
         self.feature_names = feature_names
         
-        return self.model
-    
+        return accuracy
+
+    def train_model_simple(self, X_data, y_data) -> float:
+        """
+        Train the patient to specialization model with simple X, y format
+        """
+        print("Training Patient to Specialization Model (Simple)...")
+
+        # Convert to lists if needed
+        if hasattr(X_data, 'tolist'):
+            symptoms_text = X_data.tolist()
+        else:
+            symptoms_text = list(X_data)
+
+        if hasattr(y_data, 'tolist'):
+            specializations = y_data.tolist()
+        else:
+            specializations = list(y_data)
+
+        # Fit NLP pipeline
+        print("Fitting NLP pipeline...")
+        self.nlp_pipeline.fit_vectorizer(symptoms_text, max_features=3000)
+
+        # Vectorize symptoms
+        print("Vectorizing symptoms...")
+        X = self.nlp_pipeline.vectorize_text(symptoms_text)
+
+        # Encode specializations
+        print("Encoding specializations...")
+        self.label_encoder = LabelEncoder()
+        y = self.label_encoder.fit_transform(specializations)
+
+        print(f"Training data shape: {X.shape}")
+        print(f"Number of specializations: {len(self.label_encoder.classes_)}")
+        print(f"Specializations: {self.label_encoder.classes_}")
+
+        # Split data (handle small datasets)
+        n_classes = len(self.label_encoder.classes_)
+        n_samples = len(y)
+
+        if n_samples < n_classes * 2:
+            # Too few samples for stratified split, use simple split
+            test_size = max(0.1, min(0.3, n_classes / n_samples))
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=test_size, random_state=42
+            )
+        else:
+            # Enough samples for stratified split
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42, stratify=y
+            )
+
+        # Train Random Forest model (simplified for faster training)
+        print("Training Random Forest model...")
+
+        self.model = RandomForestClassifier(
+            n_estimators=100,
+            max_depth=20,
+            min_samples_split=5,
+            min_samples_leaf=2,
+            random_state=42,
+            class_weight='balanced'
+        )
+
+        self.model.fit(X_train, y_train)
+
+        # Evaluate on test set
+        y_pred = self.model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+
+        print(f"Test accuracy: {accuracy:.4f}")
+
+        # Detailed classification report
+        target_names = self.label_encoder.classes_
+        print("\nClassification Report:")
+        print(classification_report(y_test, y_pred, target_names=target_names))
+
+        # Feature importance
+        feature_names = self.nlp_pipeline.tfidf_vectorizer.get_feature_names_out()
+        self.feature_names = feature_names
+
+        return accuracy
+
     def predict_specialization(self, symptoms_text: str, top_k: int = 3) -> List[Tuple[str, float]]:
         """
         Predict top K specializations for given symptoms

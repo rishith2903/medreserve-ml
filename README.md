@@ -303,5 +303,3 @@ For issues and questions:
 ---
 
 **Built with ❤️ for better healthcare through AI**
-#   m e d r e s e r v e - m l  
- 
