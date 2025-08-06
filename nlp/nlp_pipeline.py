@@ -17,26 +17,38 @@ from nltk.stem import WordNetLemmatizer
 import pickle
 import os
 
-# Download required NLTK data
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
+# Download required NLTK data with error handling
+def download_nltk_data():
+    """Download NLTK data with proper error handling"""
+    required_data = [
+        ('tokenizers/punkt', 'punkt'),
+        ('corpora/stopwords', 'stopwords'),
+        ('corpora/wordnet', 'wordnet')
+    ]
 
-try:
-    nltk.data.find('tokenizers/punkt_tab')
-except LookupError:
-    nltk.download('punkt_tab')
+    for data_path, download_name in required_data:
+        try:
+            nltk.data.find(data_path)
+        except LookupError:
+            try:
+                print(f"Downloading NLTK data: {download_name}")
+                nltk.download(download_name, quiet=True)
+            except Exception as e:
+                print(f"Warning: Failed to download {download_name}: {e}")
+                continue
 
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    nltk.download('stopwords')
+    # Try punkt_tab for newer NLTK versions, but don't fail if it doesn't exist
+    try:
+        nltk.data.find('tokenizers/punkt_tab')
+    except LookupError:
+        try:
+            nltk.download('punkt_tab', quiet=True)
+        except Exception:
+            # punkt_tab doesn't exist in older versions, use punkt instead
+            pass
 
-try:
-    nltk.data.find('corpora/wordnet')
-except LookupError:
-    nltk.download('wordnet')
+# Download NLTK data
+download_nltk_data()
 
 class MedicalNLPPipeline:
     """
@@ -44,17 +56,36 @@ class MedicalNLPPipeline:
     """
     
     def __init__(self):
-        self.lemmatizer = WordNetLemmatizer()
-        self.stop_words = set(stopwords.words('english'))
-        
+        # Initialize with fallback support for NLTK data
+        try:
+            self.lemmatizer = WordNetLemmatizer()
+        except Exception as e:
+            print(f"Warning: WordNetLemmatizer not available: {e}")
+            self.lemmatizer = None
+
+        try:
+            self.stop_words = set(stopwords.words('english'))
+        except Exception as e:
+            print(f"Warning: NLTK stopwords not available: {e}")
+            # Fallback stop words
+            self.stop_words = {
+                'i', 'me', 'my', 'we', 'our', 'you', 'your', 'he', 'him', 'his', 'she', 'her',
+                'it', 'its', 'they', 'them', 'their', 'this', 'that', 'these', 'those',
+                'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+                'do', 'does', 'did', 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because',
+                'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'through', 'during',
+                'before', 'after', 'above', 'below', 'up', 'down', 'in', 'out', 'on', 'off',
+                'over', 'under', 'again', 'further', 'then', 'once'
+            }
+
         # Medical-specific stop words to remove
         self.medical_stop_words = {
-            'patient', 'feel', 'feeling', 'experience', 'experiencing', 
+            'patient', 'feel', 'feeling', 'experience', 'experiencing',
             'have', 'has', 'had', 'get', 'getting', 'got', 'seem', 'seems',
             'like', 'also', 'sometimes', 'often', 'usually', 'always',
             'doctor', 'physician', 'medical', 'health', 'healthcare'
         }
-        
+
         self.stop_words.update(self.medical_stop_words)
         
         # Medical symptom keywords to preserve
@@ -93,10 +124,15 @@ class MedicalNLPPipeline:
     
     def tokenize_and_lemmatize(self, text: str) -> List[str]:
         """
-        Tokenize and lemmatize medical text
+        Tokenize and lemmatize medical text with fallback support
         """
-        # Tokenize
-        tokens = word_tokenize(text)
+        # Tokenize with fallback
+        try:
+            tokens = word_tokenize(text)
+        except Exception as e:
+            print(f"Warning: NLTK tokenizer not available: {e}")
+            # Simple fallback tokenization
+            tokens = text.split()
         
         # Remove stop words but preserve medical keywords
         tokens = [
@@ -104,8 +140,14 @@ class MedicalNLPPipeline:
             if token not in self.stop_words or token in self.medical_keywords
         ]
         
-        # Lemmatize
-        tokens = [self.lemmatizer.lemmatize(token) for token in tokens]
+        # Lemmatize with fallback
+        if self.lemmatizer:
+            try:
+                tokens = [self.lemmatizer.lemmatize(token) for token in tokens]
+            except Exception as e:
+                print(f"Warning: Lemmatization failed: {e}")
+                # Continue without lemmatization
+                pass
         
         # Remove very short tokens (less than 2 characters)
         tokens = [token for token in tokens if len(token) > 2]

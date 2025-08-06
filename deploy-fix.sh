@@ -14,16 +14,32 @@ fi
 
 echo "✅ Found ML service files"
 
-# Option to use simple Dockerfile
-read -p "Use simple Dockerfile for faster deployment? (y/n): " use_simple
+# Option to choose deployment type
+echo "Choose deployment type:"
+echo "1. Advanced (full ML models, may fail due to dependencies)"
+echo "2. Simple (minimal dependencies, basic ML)"
+echo "3. Ultra-simple (rule-based only, most reliable)"
+read -p "Enter choice (1/2/3): " choice
 
-if [ "$use_simple" = "y" ] || [ "$use_simple" = "Y" ]; then
-    echo "📝 Switching to simple Dockerfile..."
-    cp Dockerfile.simple Dockerfile
-    echo "✅ Using simple Dockerfile"
-else
-    echo "📝 Using advanced Dockerfile with multi-stage build"
-fi
+case $choice in
+    1)
+        echo "📝 Using advanced Dockerfile with full ML models"
+        # Keep existing Dockerfile
+        ;;
+    2)
+        echo "📝 Switching to simple Dockerfile..."
+        cp Dockerfile.simple Dockerfile
+        echo "✅ Using simple Dockerfile"
+        ;;
+    3)
+        echo "📝 Switching to ultra-simple Dockerfile..."
+        cp Dockerfile.ultra-simple Dockerfile
+        echo "✅ Using ultra-simple Dockerfile (most reliable)"
+        ;;
+    *)
+        echo "📝 Invalid choice, using advanced Dockerfile"
+        ;;
+esac
 
 # Update render.yaml to ensure correct port
 echo "🔧 Updating render.yaml configuration..."

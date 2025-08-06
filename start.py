@@ -65,48 +65,84 @@ def download_nltk_data():
         # Set NLTK data path to app directory
         nltk_data_dir = "/app/nltk_data"
         os.makedirs(nltk_data_dir, exist_ok=True)
-        nltk.data.path.append(nltk_data_dir)
+        nltk.data.path.insert(0, nltk_data_dir)  # Insert at beginning for priority
 
-        # Download with specific path
-        nltk.download('punkt', download_dir=nltk_data_dir, quiet=True)
-        nltk.download('punkt_tab', download_dir=nltk_data_dir, quiet=True)
-        nltk.download('stopwords', download_dir=nltk_data_dir, quiet=True)
-        nltk.download('wordnet', download_dir=nltk_data_dir, quiet=True)
-        logger.info("✅ NLTK data downloaded successfully!")
-        return True
+        # Download essential data
+        essential_data = ['punkt', 'stopwords', 'wordnet']
+        optional_data = ['punkt_tab']  # May not exist in all NLTK versions
+
+        success_count = 0
+        for data_name in essential_data:
+            try:
+                nltk.download(data_name, download_dir=nltk_data_dir, quiet=True)
+                success_count += 1
+                logger.info(f"✅ Downloaded {data_name}")
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to download {data_name}: {e}")
+
+        # Try optional data
+        for data_name in optional_data:
+            try:
+                nltk.download(data_name, download_dir=nltk_data_dir, quiet=True)
+                logger.info(f"✅ Downloaded {data_name}")
+            except Exception as e:
+                logger.info(f"ℹ️ Optional data {data_name} not available: {e}")
+
+        if success_count >= 2:  # At least punkt and stopwords
+            logger.info("✅ NLTK data downloaded successfully!")
+            return True
+        else:
+            logger.warning("⚠️ Some NLTK data failed to download")
+            return False
+
     except Exception as e:
         logger.error(f"❌ Error downloading NLTK data: {e}")
         logger.info("Continuing without NLTK data - some features may be limited")
         return False
 
 def start_api_server():
-    """Start the Flask API server"""
+    """Start the Flask API server with fallback support"""
     logger.info("🚀 Starting MedReserve ML API server...")
+
+    # Get port from environment (Render uses PORT, default to 5001)
+    port = int(os.environ.get('PORT', 5001))
+    debug = os.environ.get('DEBUG', 'False').lower() == 'true'
+
+    # Try to start the full ML API first
     try:
         # Set up environment
         os.environ['PYTHONPATH'] = '/app'
-
-        # Import and run the ML API
         sys.path.insert(0, '/app')
+
+        logger.info("Attempting to start full ML API...")
         from api.ml_api import app, initialize_models
 
         # Initialize models
         initialize_models()
 
-        # Get port from environment (Render uses PORT, default to 5001)
-        port = int(os.environ.get('PORT', 5001))
-        debug = os.environ.get('DEBUG', 'False').lower() == 'true'
-
-        logger.info(f"Starting Flask server on 0.0.0.0:{port}")
+        logger.info(f"✅ Starting full ML API server on 0.0.0.0:{port}")
         logger.info(f"Debug mode: {debug}")
 
         app.run(host='0.0.0.0', port=port, debug=debug)
 
     except Exception as e:
-        logger.error(f"❌ Error starting API server: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
-        sys.exit(1)
+        logger.error(f"❌ Full ML API failed: {e}")
+        logger.info("🔄 Falling back to simple ML API...")
+
+        try:
+            # Import and run the simple ML API as fallback
+            from api.simple_ml_api import app as simple_app
+
+            logger.info(f"✅ Starting simple ML API server on 0.0.0.0:{port}")
+            logger.info("Mode: Simple fallback (rule-based predictions)")
+
+            simple_app.run(host='0.0.0.0', port=port, debug=debug)
+
+        except Exception as fallback_error:
+            logger.error(f"❌ Even simple API failed: {fallback_error}")
+            import traceback
+            logger.error(traceback.format_exc())
+            sys.exit(1)
 
 def main():
     """Main startup function"""

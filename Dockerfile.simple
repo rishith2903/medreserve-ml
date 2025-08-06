@@ -30,11 +30,8 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p models dataset logs uploads nltk_data
 
-# Download NLTK data during build
-RUN python -c "import nltk; import os; os.makedirs('/app/nltk_data', exist_ok=True); nltk.data.path.append('/app/nltk_data'); nltk.download('punkt', download_dir='/app/nltk_data', quiet=True); nltk.download('punkt_tab', download_dir='/app/nltk_data', quiet=True); nltk.download('stopwords', download_dir='/app/nltk_data', quiet=True); nltk.download('wordnet', download_dir='/app/nltk_data', quiet=True)" || echo "NLTK download completed with warnings"
-
-# Train models during build (optional - comment out if you want faster builds)
-RUN python train_all_models.py || echo "Model training completed with warnings"
+# Skip NLTK data and model training for simple deployment
+# This version uses rule-based predictions without complex dependencies
 
 # Expose port
 EXPOSE 5001
@@ -43,5 +40,5 @@ EXPOSE 5001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:5001/health || exit 1
 
-# Start the Flask API directly
-CMD ["python", "api/ml_api.py"]
+# Start the simple Flask API directly
+CMD ["python", "api/simple_ml_api.py"]
