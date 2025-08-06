@@ -34,28 +34,72 @@ def initialize_models():
     Initialize ML models on startup
     """
     global specialization_predictor, diagnosis_predictor
-    
+
     try:
+        # Check if models directory exists
+        models_dir = "models"
+        if not os.path.exists(models_dir):
+            logger.warning(f"Models directory not found: {models_dir}")
+            logger.info("Models will be trained on first prediction request")
+            return
+
         # Initialize specialization predictor
+        logger.info("Initializing specialization predictor...")
         specialization_predictor = SpecializationPredictor()
         try:
             specialization_predictor.load_model()
-            logger.info("Specialization model loaded successfully")
+            logger.info("✅ Specialization model loaded successfully")
         except Exception as e:
-            logger.warning(f"Could not load specialization model: {e}")
+            logger.warning(f"⚠️ Could not load specialization model: {e}")
+            logger.info("Will use fallback prediction for specialization")
             specialization_predictor = None
-        
+
         # Initialize diagnosis predictor
+        logger.info("Initializing diagnosis predictor...")
         diagnosis_predictor = DiseaseMedicinePredictor()
         try:
             diagnosis_predictor.load_models()
-            logger.info("Diagnosis models loaded successfully")
+            logger.info("✅ Diagnosis models loaded successfully")
         except Exception as e:
-            logger.warning(f"Could not load diagnosis models: {e}")
+            logger.warning(f"⚠️ Could not load diagnosis models: {e}")
+            logger.info("Will train new models on first prediction request")
             diagnosis_predictor = None
-            
+
     except Exception as e:
-        logger.error(f"Error initializing models: {e}")
+        logger.error(f"❌ Error initializing models: {e}")
+        logger.info("Models will be trained on demand")
+
+def train_models_if_needed():
+    """Train models if they don't exist or failed to load"""
+    global specialization_predictor, diagnosis_predictor
+
+    try:
+        logger.info("🤖 Training models on demand...")
+
+        # Import training modules
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from train_all_models import create_sample_medical_data, train_patient_model, train_doctor_model
+
+        # Create sample data and train models
+        patient_data, doctor_data = create_sample_medical_data()
+
+        # Train patient model
+        if train_patient_model(patient_data):
+            specialization_predictor = SpecializationPredictor()
+            specialization_predictor.load_model()
+            logger.info("✅ Patient model trained and loaded")
+
+        # Train doctor model
+        if train_doctor_model(doctor_data):
+            diagnosis_predictor = DiseaseMedicinePredictor()
+            diagnosis_predictor.load_models()
+            logger.info("✅ Doctor model trained and loaded")
+
+        return True
+
+    except Exception as e:
+        logger.error(f"❌ Error training models: {e}")
+        return False
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -103,12 +147,26 @@ def predict_specialization():
             return jsonify({'error': 'top_k must be an integer between 1 and 10'}), 400
         
         # Make prediction
-        if specialization_predictor and specialization_predictor.is_loaded:
+        if specialization_predictor and hasattr(specialization_predictor, 'is_loaded') and specialization_predictor.is_loaded:
             result = specialization_predictor.predict_specializations(symptoms, top_k)
         else:
-            # Use fallback prediction
-            result = fallback_specialization_prediction(symptoms, top_k)
-            result['fallback'] = True
+            # Try to train models if they don't exist
+            if specialization_predictor is None:
+                logger.info("Attempting to train models on demand...")
+                if train_models_if_needed():
+                    if specialization_predictor and hasattr(specialization_predictor, 'is_loaded') and specialization_predictor.is_loaded:
+                        result = specialization_predictor.predict_specializations(symptoms, top_k)
+                    else:
+                        result = fallback_specialization_prediction(symptoms, top_k)
+                        result['fallback'] = True
+                else:
+                    # Use fallback prediction
+                    result = fallback_specialization_prediction(symptoms, top_k)
+                    result['fallback'] = True
+            else:
+                # Use fallback prediction
+                result = fallback_specialization_prediction(symptoms, top_k)
+                result['fallback'] = True
         
         # Add request metadata
         result['request_id'] = f"spec_{datetime.now().strftime('%Y%m%d_%H%M%S')}"

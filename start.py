@@ -61,35 +61,51 @@ def download_nltk_data():
     logger.info("📚 Downloading NLTK data...")
     try:
         import nltk
-        nltk.download('punkt', quiet=True)
-        nltk.download('punkt_tab', quiet=True)
-        nltk.download('stopwords', quiet=True)
-        nltk.download('wordnet', quiet=True)
+
+        # Set NLTK data path to app directory
+        nltk_data_dir = "/app/nltk_data"
+        os.makedirs(nltk_data_dir, exist_ok=True)
+        nltk.data.path.append(nltk_data_dir)
+
+        # Download with specific path
+        nltk.download('punkt', download_dir=nltk_data_dir, quiet=True)
+        nltk.download('punkt_tab', download_dir=nltk_data_dir, quiet=True)
+        nltk.download('stopwords', download_dir=nltk_data_dir, quiet=True)
+        nltk.download('wordnet', download_dir=nltk_data_dir, quiet=True)
         logger.info("✅ NLTK data downloaded successfully!")
         return True
     except Exception as e:
         logger.error(f"❌ Error downloading NLTK data: {e}")
+        logger.info("Continuing without NLTK data - some features may be limited")
         return False
 
 def start_api_server():
     """Start the Flask API server"""
     logger.info("🚀 Starting MedReserve ML API server...")
     try:
+        # Set up environment
+        os.environ['PYTHONPATH'] = '/app'
+
         # Import and run the ML API
+        sys.path.insert(0, '/app')
         from api.ml_api import app, initialize_models
-        
+
         # Initialize models
         initialize_models()
-        
-        # Get port from environment
+
+        # Get port from environment (Render uses PORT, default to 5001)
         port = int(os.environ.get('PORT', 5001))
         debug = os.environ.get('DEBUG', 'False').lower() == 'true'
-        
-        logger.info(f"Starting server on port {port}")
+
+        logger.info(f"Starting Flask server on 0.0.0.0:{port}")
+        logger.info(f"Debug mode: {debug}")
+
         app.run(host='0.0.0.0', port=port, debug=debug)
-        
+
     except Exception as e:
         logger.error(f"❌ Error starting API server: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         sys.exit(1)
 
 def main():

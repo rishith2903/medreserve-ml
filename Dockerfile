@@ -42,21 +42,20 @@ RUN apt-get update && apt-get install -y \
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Create non-root user for security
-RUN groupadd -r mluser && useradd -r -g mluser mluser
-
 # Copy application code
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p models dataset logs uploads && \
-    chown -R mluser:mluser /app
+# Create necessary directories with proper permissions
+RUN mkdir -p models dataset logs uploads nltk_data && \
+    chmod -R 755 /app
+
+# Set environment variables
+ENV NLTK_DATA=/app/nltk_data
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
 
 # Make startup script executable
 RUN chmod +x start.py
-
-# Switch to non-root user
-USER mluser
 
 # Expose the port
 EXPOSE 5001
@@ -65,8 +64,7 @@ EXPOSE 5001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:5001/health || exit 1
 
-# Set environment variables
-ENV PYTHONPATH=/app
+# Set additional environment variables
 ENV FLASK_APP=api/ml_api.py
 ENV PORT=5001
 
