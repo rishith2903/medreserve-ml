@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: medreserve-ml
+    env: docker
+    plan: free
+    autoDeploy: true
+    region: singapore
+    healthCheckPath: /health
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 5001
+      - key: DEBUG
+        value: false
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHONPATH
+        value: /app
+      - key: FLASK_APP
+        value: api/ml_api.py
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://med-reserve-ai.vercel.app,https://rishith2903.github.io,http://localhost:3000,https://medreserve-backend.onrender.com
+      - key: LOG_LEVEL
+        value: INFO
+      - key: MODEL_CACHE_SIZE
+        value: 100
+      - key: MAX_WORKERS
+        value: 4
+      - key: TIMEOUT
+        value: 300
